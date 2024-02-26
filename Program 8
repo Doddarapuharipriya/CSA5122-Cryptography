@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_LENGTH 26
+
+// Function to generate the monoalphabetic cipher sequence based on the keyword
+void generate_cipher_sequence(const char* keyword, char* cipher_sequence) {
+    int keyword_length = strlen(keyword);
+    int index = 0;
+
+    // Copy the keyword to the cipher sequence
+    for (int i = 0; i < keyword_length; i++) {
+        char letter = toupper(keyword[i]);
+        if (letter >= 'A' && letter <= 'Z' && !strchr(cipher_sequence, letter)) {
+            cipher_sequence[index++] = letter;
+        }
+    }
+
+    // Fill the remaining letters in the cipher sequence
+    for (char letter = 'A'; letter <= 'Z'; letter++) {
+        if (!strchr(keyword, toupper(letter))) {
+            cipher_sequence[index++] = letter;
+        }
+    }
+
+    cipher_sequence[ALPHABET_LENGTH] = '\0';
+}
+
+// Function to encrypt the plaintext using the monoalphabetic cipher sequence
+char* encrypt_monoalphabetic(const char* plaintext, const char* cipher_sequence) {
+    int plaintext_length = strlen(plaintext);
+    char* ciphertext = (char*)malloc(plaintext_length + 1);
+
+    for (int i = 0; i < plaintext_length; i++) {
+        if (isalpha(plaintext[i])) {
+            char offset = islower(plaintext[i]) ? 'a' : 'A';
+            int index = toupper(plaintext[i]) - 'A';
+            ciphertext[i] = islower(plaintext[i]) ? tolower(cipher_sequence[index]) : cipher_sequence[index];
+        } else {
+            ciphertext[i] = plaintext[i];
+        }
+    }
+    ciphertext[plaintext_length] = '\0';
+
+    return ciphertext;
+}
+
+// Function to decrypt the ciphertext using the monoalphabetic cipher sequence
+char* decrypt_monoalphabetic(const char* ciphertext, const char* cipher_sequence) {
+    int ciphertext_length = strlen(ciphertext);
+    char* plaintext = (char*)malloc(ciphertext_length + 1);
+
+    for (int i = 0; i < ciphertext_length; i++) {
+        if (isalpha(ciphertext[i])) {
+            char offset = islower(ciphertext[i]) ? 'a' : 'A';
+            int index = 0;
+            while (toupper(ciphertext[i]) != cipher_sequence[index]) {
+                index++;
+            }
+            plaintext[i] = islower(ciphertext[i]) ? tolower('A' + index) : 'A' + index;
+        } else {
+            plaintext[i] = ciphertext[i];
+        }
+    }
+    plaintext[ciphertext_length] = '\0';
+
+    return plaintext;
+}
+
+int main() {
+    const char* keyword = "CIPHER";
+    char cipher_sequence[ALPHABET_LENGTH + 1];
+
+    // Generate the monoalphabetic cipher sequence based on the keyword
+    generate_cipher_sequence(keyword, cipher_sequence);
+
+    printf("Cipher Sequence: %s\n", cipher_sequence);
+
+    const char* plaintext = "Hello, World!";
+    char* ciphertext = encrypt_monoalphabetic(plaintext, cipher_sequence);
+    printf("Encrypted text: %s\n", ciphertext);
+
+    char* decrypted_text = decrypt_monoalphabetic(ciphertext, cipher_sequence);
+    printf("Decrypted text: %s\n", decrypted_text);
+
+    free(ciphertext);
+    free(decrypted_text);
+
+    return 0;
+}
