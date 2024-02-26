@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define GRID_SIZE 5
+
+// Function to create and print the Playfair matrix
+void print_playfair_matrix(char key[]) {
+    char grid[GRID_SIZE][GRID_SIZE];
+    int i, j, k, l;
+    int len, row, col;
+    char alphabet[] = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // I and J are treated as the same letter
+
+    // Step 1: Populate the grid with the keyword
+    len = strlen(key);
+    k = 0;
+    for (i = 0; i < len; ++i) {
+        if (key[i] != ' ') { // Ignore spaces
+            if (key[i] == 'J') // Treat I and J as the same letter
+                key[i] = 'I';
+            for (j = 0; j < GRID_SIZE; ++j) {
+                for (l = 0; l < GRID_SIZE; ++l) {
+                    if (grid[j][l] == '\0') {
+                        grid[j][l] = key[i];
+                        ++k;
+                        break;
+                    }
+                }
+                if (k == len)
+                    break;
+            }
+        }
+    }
+
+    // Step 2: Fill in the remaining empty spaces with the remaining letters of the alphabet
+    for (i = 0; i < strlen(alphabet); ++i) {
+        char letter = alphabet[i];
+        if (letter == 'J') // Treat I and J as the same letter
+            continue;
+        for (j = 0; j < GRID_SIZE; ++j) {
+            for (l = 0; l < GRID_SIZE; ++l) {
+                if (grid[j][l] == '\0') {
+                    grid[j][l] = letter;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Step 3: Print the Playfair matrix
+    printf("Playfair Matrix:\n");
+    for (i = 0; i < GRID_SIZE; ++i) {
+        for (j = 0; j < GRID_SIZE; ++j) {
+            printf("%c ", grid[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    char key[] = "MFHIJK UNOPQ ZVWXY ELARG DSTBC"; // The keyword provided
+
+    print_playfair_matrix(key);
+
+    return 0;
+}
