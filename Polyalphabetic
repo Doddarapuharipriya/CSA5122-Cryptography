@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+char* vigenere_encrypt(const char* plaintext, const char* key);
+char* vigenere_decrypt(const char* ciphertext, const char* key);
+
+int main() {
+    char plaintext[1000];
+    char key[100];
+    char *ciphertext, *decryptedtext;
+
+    printf("Enter plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    printf("Enter key: ");
+    fgets(key, sizeof(key), stdin);
+
+ 
+    plaintext[strcspn(plaintext, "\n")] = '\0';
+    key[strcspn(key, "\n")] = '\0';
+
+    ciphertext = vigenere_encrypt(plaintext, key);
+    decryptedtext = vigenere_decrypt(ciphertext, key);
+
+    printf("Encrypted text: %s\n", ciphertext);
+    printf("Decrypted text: %s\n", decryptedtext);
+
+    free(ciphertext);
+    free(decryptedtext);
+
+    return 0;
+}
+
+char* vigenere_encrypt(const char* plaintext, const char* key) {
+    int plaintext_length = strlen(plaintext);
+    int key_length = strlen(key);
+    char* ciphertext = (char*)malloc(plaintext_length + 1);
+
+    for (int i = 0; i < plaintext_length; i++) {
+        if (isalpha(plaintext[i])) {
+            char offset = islower(plaintext[i]) ? 'a' : 'A';
+            ciphertext[i] = ((plaintext[i] - offset) + (key[i % key_length] - 'A')) % 26 + offset;
+        } else {
+            ciphertext[i] = plaintext[i];
+        }
+    }
+    ciphertext[plaintext_length] = '\0';
+
+    return ciphertext;
+}
+
+char* vigenere_decrypt(const char* ciphertext, const char* key) {
+    int ciphertext_length = strlen(ciphertext);
+    int key_length = strlen(key);
+    char* plaintext = (char*)malloc(ciphertext_length + 1);
+
+    for (int i = 0; i < ciphertext_length; i++) {
+        if (isalpha(ciphertext[i])) {
+            char offset = islower(ciphertext[i]) ? 'a' : 'A';
+            plaintext[i] = ((ciphertext[i] - offset) - (key[i % key_length] - 'A') + 26) % 26 + offset;
+        } else {
+            plaintext[i] = ciphertext[i];
+        }
+    }
+    plaintext[ciphertext_length] = '\0';
+
+    return plaintext;
+}
