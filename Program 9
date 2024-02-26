@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define GRID_SIZE 5
+
+// Function to remove spaces and non-alphabetic characters from the input string
+void sanitize_input(char* input) {
+    int j = 0;
+    for (int i = 0; input[i] != '\0'; i++) {
+        if (isalpha(input[i])) {
+            input[j++] = toupper(input[i]);
+        }
+    }
+    input[j] = '\0';
+}
+
+// Function to find the position of a character in the Playfair grid
+void find_position(char grid[GRID_SIZE][GRID_SIZE], char ch, int* row, int* col) {
+    for (int i = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++) {
+            if (grid[i][j] == ch) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+// Function to decrypt the Playfair ciphertext
+void decrypt_playfair(const char* ciphertext, char grid[GRID_SIZE][GRID_SIZE]) {
+    int ciphertext_length = strlen(ciphertext);
+    char plaintext[ciphertext_length + 1];
+    int index = 0;
+
+    for (int i = 0; i < ciphertext_length; i += 2) {
+        char ch1 = ciphertext[i];
+        char ch2 = ciphertext[i + 1];
+
+        int row1, col1, row2, col2;
+        find_position(grid, ch1, &row1, &col1);
+        find_position(grid, ch2, &row2, &col2);
+
+        if (row1 == row2) {
+            // Same row, shift left
+            plaintext[index++] = grid[row1][(col1 + GRID_SIZE - 1) % GRID_SIZE];
+            plaintext[index++] = grid[row2][(col2 + GRID_SIZE - 1) % GRID_SIZE];
+        } else if (col1 == col2) {
+            // Same column, shift up
+            plaintext[index++] = grid[(row1 + GRID_SIZE - 1) % GRID_SIZE][col1];
+            plaintext[index++] = grid[(row2 + GRID_SIZE - 1) % GRID_SIZE][col2];
+        } else {
+            // Rectangle, replace with opposite corners
+            plaintext[index++] = grid[row1][col2];
+            plaintext[index++] = grid[row2][col1];
+        }
+    }
+    plaintext[index] = '\0';
+
+    printf("Decrypted text: %s\n", plaintext);
+}
+
+int main() {
+    char ciphertext[] = "KXJEYUREBEZWEHEWRYTUHEYFSKREHEGOYFIWTTTUOLKSYCAJPOBOTEIZONTXBYBNTGONEYCUZWRGDSONSXBOUYWRHEBAAHYUSEDQ";
+    char grid[GRID_SIZE][GRID_SIZE] = {
+        {'A', 'B', 'C', 'D', 'E'},
+        {'F', 'G', 'H', 'I', 'K'},
+        {'L', 'M', 'N', 'O', 'P'},
+        {'Q', 'R', 'S', 'T', 'U'},
+        {'V', 'W', 'X', 'Y', 'Z'}
+    };
+
+    sanitize_input(ciphertext);
+    decrypt_playfair(ciphertext, grid);
+
+    return 0;
+}
