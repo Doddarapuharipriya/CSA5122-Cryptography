@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Function to decrypt the ciphertext using the given substitution key
+char* decrypt_simple_substitution(const char* ciphertext, const char* substitution_key) {
+    int ciphertext_length = strlen(ciphertext);
+    char* plaintext = (char*)malloc(ciphertext_length + 1);
+
+    // Mapping of characters from the given substitution key
+    char mapping[128] = {0}; // Initialize mapping to 0
+    for (int i = 0; i < 128 && substitution_key[i] != '\0'; i++) {
+        if (isalpha(substitution_key[i])) {
+            mapping[substitution_key[i]] = 'A' + i; // Map key character to corresponding plaintext character
+            mapping[substitution_key[i] + 32] = 'a' + i; // Map lowercase key character to corresponding lowercase plaintext character
+        }
+    }
+
+    // Substitute each character in the ciphertext with its corresponding plaintext character
+    for (int i = 0; i < ciphertext_length; i++) {
+        plaintext[i] = mapping[ciphertext[i]];
+        if (!plaintext[i]) // If the character is not in the mapping, keep it unchanged
+            plaintext[i] = ciphertext[i];
+    }
+    plaintext[ciphertext_length] = '\0';
+
+    return plaintext;
+}
+
+int main() {
+    const char* ciphertext = "53‡‡†305))6*;4826)4‡.)4‡);806*;48†8¶60))85;;]8*;:‡*8†83 (88)5*†;46(;88*96*?;8)*‡(;485);5*†2:*‡(;4956*2(5*—4)8¶8*;4069285);)6†8)4‡‡;1(‡9;48081;8:8‡1;48†85;4)485†528806*81 (‡9;48;(88;4(‡?34;48)4‡;161;:188;‡?";
+    const char* substitution_key = " ETAOINSHRDLCUMWFGYPBVKJXQZ"; // Most common letters in English
+
+    char* plaintext = decrypt_simple_substitution(ciphertext, substitution_key);
+
+    printf("Decrypted text: %s\n", plaintext);
+
+    free(plaintext);
+
+    return 0;
+}
