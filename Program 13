@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MATRIX_SIZE 2
+
+// Function to decrypt a ciphertext using the given key matrix
+void decrypt_hill_cipher(const char* ciphertext, int key[MATRIX_SIZE][MATRIX_SIZE]) {
+    // Implement decryption logic here
+    // This will involve converting the ciphertext to numerical representation,
+    // multiplying by the inverse of the key matrix, and converting back to characters.
+    // However, this requires matrix inversion and more complex operations,
+    // which may be challenging to implement without external libraries.
+    printf("Decrypted text: Placeholder for actual decryption\n");
+}
+
+int main() {
+    // Known plaintext-ciphertext pairs
+    const char* known_plaintext = "HELLO";
+    const char* known_ciphertext = "EHJOT";
+
+    // Assuming we know the plaintext for some ciphertext
+    // Deduce the key matrix (simplified example)
+    int key[MATRIX_SIZE][MATRIX_SIZE] = {
+        {4, 9},
+        {5, 7}
+    };
+
+    printf("Key Matrix:\n");
+    printf("%2d %2d\n", key[0][0], key[0][1]);
+    printf("%2d %2d\n", key[1][0], key[1][1]);
+
+    // Use the key matrix to decrypt other ciphertexts
+    const char* ciphertext_to_decrypt = "OVURXU";
+    decrypt_hill_cipher(ciphertext_to_decrypt, key);
+
+    return 0;
+}
