@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_LENGTH 26
+
+int gcd(int a, int b);
+int modInverse(int a, int m);
+char* affine_caesar_encrypt(const char* plaintext, int a, int b);
+char* affine_caesar_decrypt(const char* ciphertext, int a, int b);
+
+int main() {
+    char plaintext[1000];
+    int a, b;
+
+    printf("Enter plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    printf("Enter coefficients a and b (space-separated): ");
+    scanf("%d %d", &a, &b);
+
+    // Remove newline characters
+    plaintext[strcspn(plaintext, "\n")] = '\0';
+
+    // Check if 'a' is relatively prime to 26
+    if (gcd(a, ALPHABET_LENGTH) != 1) {
+        printf("Error: 'a' must be relatively prime to %d.\n", ALPHABET_LENGTH);
+        return 1;
+    }
+
+    char* ciphertext = affine_caesar_encrypt(plaintext, a, b);
+    char* decrypted_text = affine_caesar_decrypt(ciphertext, a, b);
+
+    printf("Encrypted text: %s\n", ciphertext);
+    printf("Decrypted text: %s\n", decrypted_text);
+
+    free(ciphertext);
+    free(decrypted_text);
+
+    return 0;
+}
+
+// Function to calculate the greatest common divisor (gcd) of two integers
+int gcd(int a, int b) {
+    if (b == 0)
+        return a;
+    return gcd(b, a % b);
+}
+
+// Function to calculate the modular inverse of a (mod m)
+int modInverse(int a, int m) {
+    a = a % m;
+    for (int x = 1; x < m; x++)
+        if ((a * x) % m == 1)
+            return x;
+    return 1;
+}
+
+char* affine_caesar_encrypt(const char* plaintext, int a, int b) {
+    int plaintext_length = strlen(plaintext);
+    char* ciphertext = (char*)malloc(plaintext_length + 1);
+
+    for (int i = 0; i < plaintext_length; i++) {
+        if (isalpha(plaintext[i])) {
+            char offset = islower(plaintext[i]) ? 'a' : 'A';
+            ciphertext[i] = (((a * (plaintext[i] - offset)) + b) % ALPHABET_LENGTH) + offset;
+        } else {
+            ciphertext[i] = plaintext[i];
+        }
+    }
+    ciphertext[plaintext_length] = '\0';
+
+    return ciphertext;
+}
+
+char* affine_caesar_decrypt(const char* ciphertext, int a, int b) {
+    int ciphertext_length = strlen(ciphertext);
+    char* plaintext = (char*)malloc(ciphertext_length + 1);
+    int a_inverse = modInverse(a, ALPHABET_LENGTH);
+
+    for (int i = 0; i < ciphertext_length; i++) {
+        if (isalpha(ciphertext[i])) {
+            char offset = islower(ciphertext[i]) ? 'a' : 'A';
+            plaintext[i] = ((((a_inverse * ((ciphertext[i] - offset) - b)) % ALPHABET_LENGTH) + ALPHABET_LENGTH) % ALPHABET_LENGTH) + offset;
+        } else {
+            plaintext[i] = ciphertext[i];
+        }
+    }
+    plaintext[ciphertext_length] = '\0';
+
+    return plaintext;
+}
