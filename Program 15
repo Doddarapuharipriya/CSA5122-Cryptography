@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_SIZE 26
+#define MAX_PLAINTEXTS 10
+
+// Function to calculate the frequency of each letter in a string
+void calculate_frequency(const char* text, int* frequency) {
+    int i;
+    for (i = 0; i < strlen(text); i++) {
+        if (isalpha(text[i])) {
+            char ch = toupper(text[i]);
+            frequency[ch - 'A']++;
+        }
+    }
+}
+
+// Function to find the shift with the highest frequency
+int find_most_likely_shift(const int* frequency) {
+    int max_frequency = 0;
+    int most_likely_shift = 0;
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        if (frequency[i] > max_frequency) {
+            max_frequency = frequency[i];
+            most_likely_shift = i;
+        }
+    }
+    return most_likely_shift;
+}
+
+// Function to decrypt the ciphertext using a given shift
+void decrypt(const char* ciphertext, int shift, char* plaintext) {
+    int i;
+    for (i = 0; i < strlen(ciphertext); i++) {
+        if (isalpha(ciphertext[i])) {
+            char ch = ciphertext[i] - 'A';
+            ch = (ch - shift + ALPHABET_SIZE) % ALPHABET_SIZE; // Apply reverse shift
+            plaintext[i] = ch + 'A';
+        } else {
+            plaintext[i] = ciphertext[i]; // Non-alphabetic characters remain unchanged
+        }
+    }
+    plaintext[i] = '\0';
+}
+
+int main() {
+    const char* ciphertext = "GWCURCRNAJECOGKPMGNV"; // Example ciphertext
+    int frequency[ALPHABET_SIZE] = {0}; // Initialize frequency array
+    char plaintext[strlen(ciphertext) + 1]; // Allocate space for plaintext
+
+    // Calculate frequency of each letter in the ciphertext
+    calculate_frequency(ciphertext, frequency);
+
+    // Find the most likely shift based on frequency analysis
+    int most_likely_shift = find_most_likely_shift(frequency);
+
+    // Decrypt the ciphertext using the most likely shift
+    decrypt(ciphertext, most_likely_shift, plaintext);
+
+    printf("Ciphertext: %s\n", ciphertext);
+    printf("Most likely shift: %d\n", most_likely_shift);
+    printf("Plaintext: %s\n", plaintext);
+
+    return 0;
+}
