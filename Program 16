@@ -1,0 +1,104 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_SIZE 26
+#define MAX_PLAINTEXTS 10
+
+// English letter frequencies (from https://en.wikipedia.org/wiki/Letter_frequency)
+const double english_frequencies[ALPHABET_SIZE] = {
+    0.0817, 0.0149, 0.0278, 0.0425, 0.1270, 0.0223, 0.0202, 0.0609, 0.0697, 0.0015,
+    0.0077, 0.0402, 0.0241, 0.0675, 0.0751, 0.0193, 0.0009, 0.0599, 0.0633, 0.0906,
+    0.0276, 0.0098, 0.0236, 0.0015, 0.0197, 0.0007
+};
+
+// Function to calculate the frequency of each letter in a string
+void calculate_frequency(const char* text, double* frequency) {
+    int i, total_letters = 0;
+    for (i = 0; i < strlen(text); i++) {
+        if (isalpha(text[i])) {
+            char ch = toupper(text[i]);
+            frequency[ch - 'A']++;
+            total_letters++;
+        }
+    }
+    // Convert frequencies to relative frequencies
+    for (i = 0; i < ALPHABET_SIZE; i++) {
+        frequency[i] /= total_letters;
+    }
+}
+
+// Function to calculate the chi-square score for a given plaintext frequency
+double calculate_chi_square(const double* plaintext_frequency) {
+    double chi_square = 0.0;
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        double expected_frequency = english_frequencies[i];
+        double difference = plaintext_frequency[i] - expected_frequency;
+        chi_square += (difference * difference) / expected_frequency;
+    }
+    return chi_square;
+}
+
+// Function to decrypt the ciphertext using a given key
+void decrypt(const char* ciphertext, const char* key, char* plaintext) {
+    for (int i = 0; i < strlen(ciphertext); i++) {
+        if (isalpha(ciphertext[i])) {
+            char ch = toupper(ciphertext[i]);
+            plaintext[i] = key[ch - 'A'];
+        } else {
+            plaintext[i] = ciphertext[i]; // Non-alphabetic characters remain unchanged
+        }
+    }
+    plaintext[strlen(ciphertext)] = '\0';
+}
+
+int main() {
+    const char* ciphertext = "Jxu qhnayji qjwji. Tujw hnumjw ymfyj tk j'xuhj f xytw."
+                             "F xytw qfsi yt itzqhyjx, yt jxyii ymj xhnumjw. Ymnx hqfxxmji qjx tujw ktwjuwji. "
+                             "Ktwjuwji, kwnhyx, tujw hnumjw ymfyj tk qjyyjw tk ji. Ymj rtzxy mfx tujw ymtzxji ymj rtzxyji qjx "
+                             "xmtbjw, mfx ymj rtzxyji xmtbjw qjx ymtzxji.";
+    double frequency[ALPHABET_SIZE] = {0}; // Initialize frequency array
+    char plaintext[strlen(ciphertext) + 1]; // Allocate space for plaintext
+    char key[ALPHABET_SIZE + 1]; // Allocate space for key
+
+    // Calculate frequency of each letter in the ciphertext
+    calculate_frequency(ciphertext, frequency);
+
+    // Calculate the chi-square score for each possible key
+    double chi_square_scores[ALPHABET_SIZE] = {0};
+    for (int i = 0; i < ALPHABET_SIZE; i++) {
+        char current_key[ALPHABET_SIZE + 1];
+        for (int j = 0; j < ALPHABET_SIZE; j++) {
+            current_key[j] = 'A' + (i + j) % ALPHABET_SIZE;
+        }
+        current_key[ALPHABET_SIZE] = '\0';
+        decrypt(ciphertext, current_key, plaintext);
+        double plaintext_frequency[ALPHABET_SIZE] = {0};
+        calculate_frequency(plaintext, plaintext_frequency);
+        chi_square_scores[i] = calculate_chi_square(plaintext_frequency);
+    }
+
+    // Sort keys based on chi-square scores
+    for (int i = 0; i < ALPHABET_SIZE - 1; i++) {
+        for (int j = i + 1; j < ALPHABET_SIZE; j++) {
+            if (chi_square_scores[i] > chi_square_scores[j]) {
+                double temp = chi_square_scores[i];
+                chi_square_scores[i] = chi_square_scores[j];
+                chi_square_scores[j] = temp;
+                char temp_key = key[i];
+                key[i] = key[j];
+                key[j] = temp_key;
+            }
+        }
+    }
+
+    // Print top 10 possible plaintexts
+    printf("Top 10 possible plaintexts:\n");
+    for (int i = 0; i < MAX_PLAINTEXTS; i++) {
+        decrypt(ciphertext, key[i], plaintext);
+        printf("Plaintext %d: %s\n", i + 1, plaintext);
+    }
+
+    return 0;
+}
