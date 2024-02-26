@@ -1,0 +1,19 @@
+#include <stdio.h>
+
+long long factorial(int n) {
+    long long result = 1;
+    for (int i = 1; i <= n; ++i) {
+        result *= i;
+    }
+    return result;
+}
+
+int main() {
+    long long total_keys = factorial(25);
+    long long equivalent_keys = 4; // Assuming 4 equivalent keys (rotations and reflections)
+
+    printf("Total possible keys without considering equivalent keys: %lld\n", total_keys);
+    printf("Approximate number of effectively unique keys: %lld\n", total_keys / equivalent_keys);
+
+    return 0;
+}
